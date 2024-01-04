@@ -8,6 +8,8 @@ argument_list_html_template = \
 <button type="submit">Submit</button>
 </form>"""
 
+feature_list = open('feature_list.txt', 'r').read().split('\n')
+
 chart_setting = {
     'heatmap': {
         (0, 'start-date'): ('input', 'date'),
@@ -22,7 +24,7 @@ chart_setting = {
         (1, 'end-date'): ('input', 'date'),
     },
     'demographic': {
-        (0, 'feature'): ('option', ['race', 'sex']),
+        (0, 'feature'): ('option', feature_list),
         (1, 'values'): ('option', ['count']),
         (2, 'start-date'): ('input', 'date'),
         (3, 'end-date'): ('input', 'date'),
