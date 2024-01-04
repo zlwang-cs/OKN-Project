@@ -10,15 +10,80 @@ app = Flask(__name__)
 data = pd.read_csv('alignment_shooting.csv')
 data.dropna(inplace=True)
 
-size_k = 75
+feature_list = open('feature_list.txt', 'r').read().split('\n')
+
+size_k = 150
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
     selected_chart = 'none'
     if request.method == 'POST':
         selected_chart = request.form['select_chart_name']
-        arg_list = build_argument_list(selected_chart)
-        return render_template('index.html', selected_chart=selected_chart, arg_list=arg_list)
+
+        if selected_chart == 'none':
+            return render_template('index.html', selected_chart='none')
+
+        kwargs = {}
+        if selected_chart == 'heatmap':
+            kwargs['arg0'] = "2023-01-01"
+            kwargs['arg1'] = "2023-12-31"
+            fig = plot_shooting_heatmap(data, 
+                                        start_date=kwargs['arg0'], 
+                                        end_date=kwargs['arg1'])
+            fig.savefig('static/images/plot.png')
+            fig_path = 'static/images/plot.png'
+            width = 7*size_k
+            height = 7*size_k
+        elif selected_chart == 'heatmap-on-map':
+            kwargs['arg0'] = "2023-01-01"
+            kwargs['arg1'] = "2023-12-31"
+            heatmap_map = create_shooting_heatmap_on_map(data,
+                                                         start_date=kwargs['arg0'],
+                                                         end_date=kwargs['arg1'])
+            heatmap_map.save('static/heatmap_map.html')
+            html_path = 'static/heatmap_map.html'
+            width = 10*size_k
+            height = 8*size_k
+        elif selected_chart == 'time-series':
+            kwargs['arg0'] = "2023-01-01"
+            kwargs['arg1'] = "2023-12-31"
+            fig = plot_time_series(data, 
+                                   start_date=kwargs['arg0'], 
+                                   end_date=kwargs['arg1'])
+            fig.savefig('static/images/plot.png')
+            fig_path = 'static/images/plot.png'
+            width = 10*size_k
+            height = 6*size_k
+        elif selected_chart == 'demographic':
+            kwargs['arg0'] = feature_list[0]
+            kwargs['arg1'] = "count"
+            kwargs['arg2'] = "2023-01-01"
+            kwargs['arg3'] = "2023-12-31"
+            fig = plot_demographic_analysis(data, 
+                                            demographic_feature=kwargs['arg0'], 
+                                            analysis_type=kwargs['arg1'],
+                                            start_date=kwargs['arg2'],
+                                            end_date=kwargs['arg3'])
+            fig.savefig('static/images/plot.png')
+            fig_path = 'static/images/plot.png'
+            width = 10*size_k
+            height = 6*size_k
+        
+        arg_list = build_argument_list(selected_chart, **kwargs)
+
+        if selected_chart == "heatmap-on-map":
+            return render_template('index.html', 
+                                   selected_chart=selected_chart, 
+                                   arg_list=arg_list,
+                                   html_path=html_path,
+                                   width=width, height=height)
+        else:
+            return render_template('index.html', 
+                                   selected_chart=selected_chart, 
+                                   arg_list=arg_list,
+                                   image_path=fig_path,
+                                   width=width, height=height)
+
     return render_template('index.html', selected_chart='none')
 
 @app.route('/demographic-chart', methods=['GET', 'POST'])
@@ -100,8 +165,8 @@ def heatmap_vis():
             fig = plot_shooting_heatmap(data, arg0, arg1)
             fig.savefig('static/images/plot.png')
             fig_path = 'static/images/plot.png'
-            width = 10*size_k
-            height = 10*size_k
+            width = 7*size_k
+            height = 7*size_k
         except:
             fig_path = 'static/images/error.png'
             width = 5*size_k
@@ -119,23 +184,33 @@ def heatmap_on_map_vis():
         arg0 = request.form['arg0_name'] # start date
         arg1 = request.form['arg1_name'] # end date
         print(arg0, arg1)
+
         selected_chart = 'heatmap-on-map'
         arg_list = build_argument_list(selected_chart,
                                        arg0=arg0,
                                        arg1=arg1)
         try:
             heatmap_map = create_shooting_heatmap_on_map(data,
-                                                         start_date=arg0,
-                                                         end_date=arg1)
-            heatmap_map.save('templates/heatmap_map.html')
-            return render_template('heatmap_map.html')
-        except Exception as e:
-            print('Error:', e)
+                                                 start_date=arg0,
+                                                 end_date=arg1)
+            heatmap_map.save('static/heatmap_map.html')
+            html_path = 'static/heatmap_map.html'
+            width = 10*size_k
+            height = 8*size_k
+            return render_template('index.html', 
+                                   selected_chart=selected_chart, 
+                                   arg_list=arg_list,
+                                   html_path=html_path,
+                                   width=width, height=height)
+        except:
+            fig_path = 'static/images/error.png'
+            width = 5*size_k
+            height = 5*size_k
             return render_template('index.html', 
                                     selected_chart=selected_chart, 
                                     arg_list=arg_list,
-                                    image_path='static/images/error.png',
-                                    width=5*size_k, height=5*size_k)
+                                    image_path=fig_path,
+                                    width=width, height=height)
     return render_template('index.html', selected_chart='none')
 
 if __name__ == '__main__':
