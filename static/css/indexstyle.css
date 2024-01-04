@@ -6,8 +6,10 @@ body {
 h1 {
     color: rgb(0,98,155);
     font-family: Arial, sans-serif;
-
-
+}
+h3 {
+  margin-left: 15%;
+  font-family: Arial, sans-serif;
 }
 
 .center {
@@ -16,49 +18,98 @@ h1 {
   margin-right: auto;
 }
 
-
-h3 {
-    margin-left: 15%;
-    font-family: Arial, sans-serif;
-  }
-
-/* button {
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto;
-    width: 220px;
-    height: 50px;
-    font-size: 20px;
-    text-align: center;
-    background-color: rgb(255,205,0);
-    color: rgb(76,76,72);
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-
-
-} */
-.prediction, .signature {
-  text-align: center; /* Center the content horizontally */
-  margin-top: 100px; /* Add top margin for spacing */
+div.bar {
+  float: left;
+  width: 25%;
 }
 
-.prediction {
-  margin-bottom: 20px; /* Add bottom margin for spacing */
+div.chart {
+  float: left;
+  width: 75%;
 }
-
-#button1 {
-    margin-top: 20px;
-  }
-#button2 {
-    margin-top: 20px;
-  }
 
 footer {
   position: absolute;
   bottom: 0;
   right: 0;
+}
+
+.fancy-div {
+  /* background: linear-gradient(45deg, #89CFF0, #B3E0F4, #89CFF0, #B3E0F4); */
+  background: linear-gradient(45deg, #6db5fd, #B3E0F4, #6db5fd, #B3E0F4);
+  background-size: 200% 200%;
+  animation: gradientShift 4s ease infinite;
+  border: 1px solid #ffffff; /* white border */
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2); /* subtle shadow */
+  padding: 10px;
+  margin: 10px auto;
+  text-align: center;
+  color: #003366;
+  width: 95%; /* adjust as per requirement */
+  border-radius: 10px; /* rounded corners */
+  font-family: 'Roboto', sans-serif; /* Roboto font */
+  font-size: 16px; /* Adjusted font size */
+  font-weight: 400; /* Normal font weight */
+}
+
+@keyframes gradientShift {
+  0% {background-position: 0% 50%}
+  50% {background-position: 100% 50%}
+  100% {background-position: 0% 50%}
+}
+
+.image-div {
+  border: 3px solid #2F4F4F; /* Dark slate gray border */
+  padding: 10px;
+  margin: 10px auto;
+  width: 95%; /* Adjust based on image size */
+  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+  border-radius: 15px; /* Rounded corners for a softer look */
+  overflow: hidden; /* Ensures the content fits neatly within the border */
+  background-color: #F0F8FF; /* Light background color */
+  display: flex;
+  justify-content: center; /* Center the image inside the div */
+  align-items: center;
+}
+
+.image-div img {
+  width: 100%; /* Adjust the width as necessary */
+  height: auto; /* Maintain aspect ratio */
+  border-radius: 10px; /* Rounded corners for the image */
+}
+
+.html-div {
+  border: 3px solid #2F4F4F; /* Dark slate gray border */
+  padding: 10px;
+  margin: 10px auto;
+  width: 95%; /* Adjust based on image size */
+  height: 750px;
+  box-shadow: 0 8px 16px 0 rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+  border-radius: 15px; /* Rounded corners for a softer look */
+  overflow: hidden; /* Ensures the content fits neatly within the border */
+  background-color: #F0F8FF; /* Light background color */
+  display: flex;
+  justify-content: left; /* Center the image inside the div */
+  align-items: left;
+}
+
+.html-div iframe {
+  width: 100%; /* Adjust the width as necessary */
+  height: auto; /* Maintain aspect ratio */
+  border-radius: 10px; /* Rounded corners for the image */
+}
+
+.left-td {
+  text-align: left;
+}
+
+.right-td {
+  text-align: right;
+}
+
+.centered-table {
+  margin-left: auto;
+  margin-right: auto;
+  width: 80%; /* Adjust the width as needed */
+  /* Additional styling */
 }

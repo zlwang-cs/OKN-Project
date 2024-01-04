@@ -5,7 +5,7 @@ argument_list_html_template = \
 """<form action="/{0}-chart" method="post" class="center">
 {1}
 <br>
-<button type="submit">Submit</button>
+<button type="submit" class="center">Submit</button>
 </form>"""
 
 feature_list = open('feature_list.txt', 'r').read().split('\n')
@@ -37,13 +37,17 @@ def build_argument_list(chart_type, **kwargs):
     arg_info = chart_setting[chart_type]
     arg_names = sorted(arg_info.keys())
 
-    body = ''
+    body = '<table class="centered-table">'
 
     for i, arg_name_w_id in enumerate(arg_names):
         input_type, input_details = arg_info[arg_name_w_id]
         arg_name = arg_name_w_id[1]
-        cur_arg_part = '<label for="arg{0}">{1}: </label>'.format(i, arg_name)
 
+        cur_arg_part = ''
+        cur_arg_part += '<tr>'
+        cur_arg_part += f'<td class="right-td">{arg_name}</td>'
+        cur_arg_part += '<td class="left-td">'
+        cur_arg_part += '<label for="arg{0}"></label>'.format(i, arg_name)
         if input_type == 'option':
             cur_arg_part += '<select name="arg{0}_name" id="arg{0}_id">'.format(i)
             selected_option = kwargs.get('arg{}'.format(i), 'none')
@@ -57,7 +61,6 @@ def build_argument_list(chart_type, **kwargs):
                 else:
                     cur_arg_part += '<option value="{1}">{1}</option>'.format(i, option)
             cur_arg_part += '</select>'
-            cur_arg_part += '<br>'
         elif input_type == 'input':
             assert input_details == 'date'
             input_contents = kwargs.get('arg{}'.format(i), 'none')
@@ -65,8 +68,9 @@ def build_argument_list(chart_type, **kwargs):
                 cur_arg_part += '<input type="date" id="arg{0}_id" name="arg{0}_name">'.format(i)
             else:
                 cur_arg_part += '<input type="date" id="arg{0}_id" name="arg{0}_name" value="{1}">'.format(i, input_contents)
-            cur_arg_part += '<br>'
-
+        cur_arg_part += '</td></tr>'
         body += cur_arg_part
+    
+    body += '</table>'
     
     return argument_list_html_template.format(chart_type, body)

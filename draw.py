@@ -88,7 +88,7 @@ def plot_shooting_heatmap(data, start_date, end_date, feature_filters=None):
     gdf = gpd.GeoDataFrame(filtered_data, geometry=gpd.points_from_xy(filtered_data.lng, filtered_data.lat))
 
     # Creating the heatmap
-    fig, ax = plt.subplots(figsize=(10, 10))
+    fig, ax = plt.subplots(figsize=(10, 6))
     gdf.plot(ax=ax, marker='o', color='red', markersize=5)
     sns.kdeplot(x=gdf['lng'], y=gdf['lat'], ax=ax, cmap="Reds", shade=True, alpha=0.5)
 
