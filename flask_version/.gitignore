@@ -1,0 +1,4 @@
+__pycache__
+.DS_Store
+templates/heatmap_map.html
+static/images/*.png
