@@ -1,5 +1,5 @@
-import { useEffect } from "react";
 import * as turf from '@turf/turf';
+import { useState, useEffect } from "react";
 import L from "leaflet";
 import "leaflet.heat";
 import "leaflet/dist/leaflet.css";
@@ -8,6 +8,14 @@ import censusTrackAreas from "../data/census_track.json";
 
 // Leaflet website for API documentation: https://leafletjs.com/examples/quick-start/
 const Map = (): JSX.Element => {
+  const [points, setPoints] = useState<number[][]>([]);
+  const [censusBlock, setCensusBlock] = useState<number>();
+
+  useEffect(() => {
+    console.log("Points: ", points);
+    console.log("Census Block: ", censusBlock);
+  }, [points, censusBlock]);
+
   useEffect(() => {
 
     // draw map

@@ -1,14 +1,20 @@
 import pandas as pd
 import shutil
-from draw import plot_shooting_heatmap, plot_time_series, plot_demographic_analysis, create_shooting_heatmap_on_map
+from utils.draw import plot_shooting_heatmap, plot_time_series, plot_demographic_analysis, create_shooting_heatmap_on_map
 from flask import Flask, render_template, request
-from utils import build_argument_list
-
+from utils.utils import build_argument_list
+from models.model import DataModel
+from controllers.line import *
+from controllers.demographic import *
+from flask_cors import CORS, cross_origin
 
 app = Flask(__name__)
+# Configure CORS similarly to your Go application
+cors = CORS(app, resources={r"/*": {"origins": "http://localhost:4321"}})
 
-data = pd.read_csv('alignment_shooting.csv')
-data.dropna(inplace=True)
+# Init the data model
+data_model = DataModel('alignment_shooting.csv')
+data = data_model.data
 
 feature_list = open('feature_list.txt', 'r').read().split('\n')
 
@@ -213,6 +219,17 @@ def heatmap_on_map_vis():
                                     width=width, height=height)
     return render_template('index.html', selected_chart='none')
 
-if __name__ == '__main__':
-    app.run()
+# line chart endpoint
+@app.route('/line-chart-data', methods=["POST", "OPTIONS"])
+@cross_origin()
+def line_chart_data():
+    return line_chart(data_model)
 
+# demographic chart endpoint
+@app.route('/demographic-chart-data', methods=["POST", "OPTIONS"])
+@cross_origin()
+def demographic_chart_data():
+    return demographic_chart(data_model)
+
+if __name__ == '__main__':
+    app.run(debug=True)

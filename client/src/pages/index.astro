@@ -2,12 +2,14 @@
 import Layout from "../layouts/Layout.astro";
 import Map from "../components/Map.tsx";
 import Header from "../components/Header.astro";
+import ShowChartsButton from "../components/charts/ShowChartsButton";
 ---
 
 <Layout title="Welcome to Astro.">
   <main class="flex flex-col items-center justify-center">
     <Header />
     <Map client:only />
+    <ShowChartsButton client:load />
   </main>
 </Layout>
 

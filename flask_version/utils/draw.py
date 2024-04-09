@@ -148,16 +148,21 @@ def plot_time_series(data, start_date, end_date, feature_filters=None, bbox=None
     # Resample the data based on the specified interval
     resampled_data = filtered_data.resample(interval, on='date_').size()
 
-    # Creating the figure
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.lineplot(data=resampled_data, ax=ax)
-    ax.set_title('Number of Shootings Over Time')
-    ax.set_xlabel('Date')
-    ax.set_ylabel('Number of Shootings')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
+    # Convert to dictionary with date as key and count as value
+    json_serializable_data = {date.strftime('%Y-%m-%d'): count for date, count in resampled_data.items()}
 
-    return fig
+    return json_serializable_data
+
+    # # Creating the figure
+    # fig, ax = plt.subplots(figsize=(10, 6))
+    # sns.lineplot(data=resampled_data, ax=ax)
+    # ax.set_title('Number of Shootings Over Time')
+    # ax.set_xlabel('Date')
+    # ax.set_ylabel('Number of Shootings')
+    # plt.xticks(rotation=45)
+    # plt.tight_layout()
+
+    # return fig
 
 # Example usage of the function
 # feature_filters = {'race': ['B', 'W'], 'sex': ['M']} # Optional
@@ -209,16 +214,18 @@ def plot_demographic_analysis(data, demographic_feature, analysis_type='count', 
         # Extend this part for other types of analyses like mean, etc.
         analysis_result = data[demographic_feature].value_counts()  # Placeholder
 
-    # Creating the figure
-    fig, ax = plt.subplots(figsize=(10, 6))
-    analysis_result.plot(kind='bar', ax=ax)
-    ax.set_title(f'Demographic Analysis based on {demographic_feature}')
-    ax.set_xlabel(demographic_feature)
-    ax.set_ylabel(analysis_type.capitalize())
-    plt.xticks(rotation=45)
-    plt.tight_layout()
+    return analysis_result.to_dict()
 
-    return fig
+    # # Creating the figure
+    # fig, ax = plt.subplots(figsize=(10, 6))
+    # analysis_result.plot(kind='bar', ax=ax)
+    # ax.set_title(f'Demographic Analysis based on {demographic_feature}')
+    # ax.set_xlabel(demographic_feature)
+    # ax.set_ylabel(analysis_type.capitalize())
+    # plt.xticks(rotation=45)
+    # plt.tight_layout()
+
+    # return fig
 
 # Example usage of the function
 # feature_filters = {'race': ['B', 'W']} # Optional
@@ -235,4 +242,7 @@ if __name__ == '__main__':
     # feature_filters = {'race': ['B', 'W']} # Optional
     heatmap_map = create_shooting_heatmap_on_map(data, '2023-01-01', '2023-12-31', feature_filters=None)
     heatmap_map.save('heatmap.html')  # Save to an HTML file
-    e = input()
+
+    # save line chart fig
+    fig = plot_time_series(data, '2023-01-01', '2023-12-31', feature_filters=None, bbox=None, interval='M')
+    fig.savefig('static/images/line.png')
