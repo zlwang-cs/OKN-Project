@@ -13,8 +13,11 @@ def line_chart(data_model):
     # Get start and end dates from the request body
     start_date = body.get('start_date')
     end_date = body.get('end_date')
+    census_block = body.get('census_block')
+    print(start_date, end_date, census_block)
 
     # call plot_time_series function
-    analysis_result = plot_time_series(data_model.data, start_date=start_date, end_date=end_date, interval="ME")
+    analysis_result = plot_time_series(data_model.data, start_date=start_date, census_block=census_block, end_date=end_date, interval="M")
+    print(analysis_result)
 
     return jsonify(analysis_result)
