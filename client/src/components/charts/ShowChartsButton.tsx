@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import OknLineChart from "./OknLineChart";
 import OknDemographicChart from "./OknDemographicChart";
 import type {
@@ -8,30 +8,39 @@ import type {
   DemographicChartRawDataObject,
 } from "../../data/types";
 
-const ShowChartsButton = () => {
-  const [showCharts, setShowCharts] = useState(false);
+type ShowChartsButtonProps = {
+  censusBlock: number | undefined;
+};
+
+const ShowChartsButton = ({ censusBlock }: ShowChartsButtonProps) => {
+  // const [showCharts, setShowCharts] = useState(false);
   const [lineChartData, setLineChartData] = useState<LineChartDataType[]>([]);
   const [demographicChartData, setDemographicChartData] = useState<
     DemographicChartDataType[]
   >([]);
 
-  const submitShowCharts = () => {
-    // if the charts are not shown, fetch the data and set showCharts to true
-    if (!showCharts) {
-      setShowCharts(true);
-      fetchData();
-      return;
-    }
+  useEffect(() => {
+    console.log("censusBlock: ", censusBlock);
+    fetchData();
+  }, [censusBlock]);
 
-    // if the charts are shown, set showCharts to false
-    setShowCharts(false);
-  };
+  // const submitShowCharts = () => {
+  //   // if the charts are not shown, fetch the data and set showCharts to true
+  //   if (!showCharts) {
+  //     setShowCharts(true);
+  //     fetchData();
+  //     return;
+  //   }
+
+  //   // if the charts are shown, set showCharts to false
+  //   setShowCharts(false);
+  // };
 
   const fetchData = async () => {
     // try to fetch data
     try {
       // Fetch line chart data
-      const response = await fetch("http://127.0.0.1:5000/line-chart-data", {
+      const response = await fetch("http://127.0.0.1:12345/line-chart-data", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -39,6 +48,7 @@ const ShowChartsButton = () => {
         body: JSON.stringify({
           start_date: "2023-01-01",
           end_date: "2023-12-31",
+          census_block: censusBlock,
         }),
       });
       const data: LineChartRawDataObject = await response.json();
@@ -50,7 +60,7 @@ const ShowChartsButton = () => {
 
       // Fetch demographic chart data
       const demographicResponse = await fetch(
-        "http://127.0.0.1:5000/demographic-chart-data",
+        "http://127.0.0.1:12345/demographic-chart-data",
         {
           method: "POST",
           headers: {
@@ -60,6 +70,7 @@ const ShowChartsButton = () => {
             demographic_feature: "sex",
             start_date: "2023-01-01",
             end_date: "2023-12-31",
+            census_block: censusBlock,
           }),
         },
       );
@@ -78,19 +89,23 @@ const ShowChartsButton = () => {
 
   return (
     <div className="w-screen flex flex-col items-center justify-center mt-4">
-
-      <button
+      {/* <button
         className="p-2 rounded-xl bg-blue-500 text-sm transition ease-in-out duration-100 delay-75 hover:scale-105 active:scale-95 hover:shadow-lg hover:shadow-gray-600/50"
         onClick={submitShowCharts}
       >
         Show Charts
-      </button>
-      {showCharts && (
+      </button> */}
         <div className="w-full flex flex-row items-center justify-center">
+          {
+            lineChartData.length === 0 && demographicChartData.length === 0 && (
+              <div className="text-lg text-gray-500 mt-4">
+                No data available for this census block.
+              </div>
+            )
+          }
           <OknLineChart data={lineChartData} />
           <OknDemographicChart data={demographicChartData} />
         </div>
-      )}
     </div>
   );
 };

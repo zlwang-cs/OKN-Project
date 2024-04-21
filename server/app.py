@@ -232,4 +232,4 @@ def demographic_chart_data():
     return demographic_chart(data_model)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=12345, debug=True)

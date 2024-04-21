@@ -44,7 +44,7 @@ Inside of your Astro project, you'll see the following folders and files:
    ├── layouts
    │  └── Layout.astro
    ├── pages
-   │  │   └── api      
+   │  │   └── api
    │  └── index.astro
    └── utils
 ```

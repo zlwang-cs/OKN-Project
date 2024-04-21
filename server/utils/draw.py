@@ -105,7 +105,7 @@ def plot_shooting_heatmap(data, start_date, end_date, feature_filters=None):
 # fig.show()
 
 
-def plot_time_series(data, start_date, end_date, feature_filters=None, bbox=None, interval='M'):
+def plot_time_series(data, start_date, end_date, census_block, feature_filters=None, bbox=None, interval='M'):
     """
     Create a time series plot of the number of shootings based on specified feature filters, 
     a bounding box, and return the figure.
@@ -121,6 +121,21 @@ def plot_time_series(data, start_date, end_date, feature_filters=None, bbox=None
     Returns:
     matplotlib.figure.Figure: The figure object containing the time series plot.
     """
+    if 'date_' not in data.columns:
+        raise ValueError("DataFrame must contain a 'date_' column")
+    
+    # Ensure the date column is in datetime format and set as index if not already
+    if not pd.api.types.is_datetime64_any_dtype(data['date_']):
+        data['date_'] = pd.to_datetime(data['date_'])
+        data.set_index('date_', inplace=True, drop=False)  # Use drop=False to keep the column
+
+    try:
+        # Attempt to infer a frequency, if possible
+        data.index = pd.DatetimeIndex(data.index, freq='infer')
+    except ValueError:
+        # If inference fails, fallback to not setting a frequency
+        data.index = pd.DatetimeIndex(data.index)
+
     # Set default value for feature_filters if None
     if feature_filters is None:
         feature_filters = {}
@@ -138,6 +153,10 @@ def plot_time_series(data, start_date, end_date, feature_filters=None, bbox=None
     # Ensure the date column is in datetime format
     data['date_'] = pd.to_datetime(data['date_'])
 
+    # Filter data based on the census block if provided
+    if census_block:
+        data = data[data['Census track'] == census_block]
+
     # Filter data based on the provided date range
     if start_date and end_date:
         mask = (data['date_'] >= start_date) & (data['date_'] <= end_date)
@@ -146,11 +165,10 @@ def plot_time_series(data, start_date, end_date, feature_filters=None, bbox=None
         filtered_data = data
 
     # Resample the data based on the specified interval
-    resampled_data = filtered_data.resample(interval, on='date_').size()
+    resampled_data = filtered_data.resample(interval).size()
 
     # Convert to dictionary with date as key and count as value
     json_serializable_data = {date.strftime('%Y-%m-%d'): count for date, count in resampled_data.items()}
-
     return json_serializable_data
 
     # # Creating the figure
@@ -171,7 +189,7 @@ def plot_time_series(data, start_date, end_date, feature_filters=None, bbox=None
 # fig.show()
 
 
-def plot_demographic_analysis(data, demographic_feature, analysis_type='count', feature_filters=None, start_date=None, end_date=None, bbox=None):
+def plot_demographic_analysis(data, demographic_feature, census_block, analysis_type='count', feature_filters=None, start_date=None, end_date=None, bbox=None):
     """
     Create a plot for demographic analysis of shootings based on a specified demographic feature, with time and location filters.
 
@@ -206,6 +224,10 @@ def plot_demographic_analysis(data, demographic_feature, analysis_type='count', 
         min_x, min_y, max_x, max_y = bbox
         data = data[(data['point_x'] >= min_x) & (data['point_x'] <= max_x) &
                     (data['point_y'] >= min_y) & (data['point_y'] <= max_y)]
+        
+    # Filter data based on the census block if provided
+    if census_block:
+        data = data[data['Census track'] == census_block]
 
     # Perform the analysis
     if analysis_type == 'count':

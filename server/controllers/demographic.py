@@ -16,10 +16,9 @@ def demographic_chart(data_model):
     # Get start and end dates from the request body
     start_date = body.get('start_date')
     end_date = body.get('end_date')
+    census_block = body.get('census_block')
 
     # call plot_demographic_analysis function
-    analysis_result = plot_demographic_analysis(data_model.data, demographic_feature, start_date=start_date, end_date=end_date)
-
-    print(analysis_result)
+    analysis_result = plot_demographic_analysis(data_model.data, demographic_feature, census_block=census_block, start_date=start_date, end_date=end_date)
 
     return jsonify(analysis_result)
