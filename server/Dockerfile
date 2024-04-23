@@ -21,7 +21,7 @@ RUN pip install -r requirements.txt
 COPY . /app
 
 # Expose the port the server will run on
-EXPOSE 8000
+EXPOSE 12345
 
 # Start the server
 CMD ["python3", "app.py"]

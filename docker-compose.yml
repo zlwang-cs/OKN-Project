@@ -4,7 +4,7 @@ services:
       context: ./server
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "12345:12345"
 
   client:
     build:

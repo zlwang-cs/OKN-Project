@@ -40,7 +40,7 @@ const ShowChartsButton = ({ censusBlock }: ShowChartsButtonProps) => {
     // try to fetch data
     try {
       // Fetch line chart data
-      const response = await fetch("http://127.0.0.1:8000/line-chart-data", {
+      const response = await fetch("http://127.0.0.1:12345/line-chart-data", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -60,7 +60,7 @@ const ShowChartsButton = ({ censusBlock }: ShowChartsButtonProps) => {
 
       // Fetch demographic chart data
       const demographicResponse = await fetch(
-        "http://127.0.0.1:8000/demographic-chart-data",
+        "http://127.0.0.1:12345/demographic-chart-data",
         {
           method: "POST",
           headers: {
