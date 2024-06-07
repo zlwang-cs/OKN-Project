@@ -105,7 +105,7 @@ def plot_shooting_heatmap(data, start_date, end_date, feature_filters=None):
 # fig.show()
 
 
-def plot_time_series(data, start_date, end_date, census_block, feature_filters=None, bbox=None, interval='M'):
+def plot_time_series(data, start_date, end_date, census_blocks=None, feature_filters=None, bbox=None, interval='M'):
     """
     Create a time series plot of the number of shootings based on specified feature filters, 
     a bounding box, and return the figure.
@@ -114,12 +114,13 @@ def plot_time_series(data, start_date, end_date, census_block, feature_filters=N
     data (DataFrame): The dataframe containing the shooting data.
     start_date (str): The start date for the analysis (YYYY-MM-DD format).
     end_date (str): The end date for the analysis (YYYY-MM-DD format).
+    census_blocks (list of int, optional): List of census block numbers for filtering.
     feature_filters (dict, optional): A dictionary where keys are column names and values are lists of selected values for each feature.
     bbox (tuple, optional): A tuple of (min_x, min_y, max_x, max_y) representing the bounding box for filtering by geographical coordinates.
     interval (str): The time interval for analysis ('M' for monthly, 'Y' for yearly).
 
     Returns:
-    matplotlib.figure.Figure: The figure object containing the time series plot.
+    dict: A dictionary with dates as keys and counts as values.
     """
     if 'date_' not in data.columns:
         raise ValueError("DataFrame must contain a 'date_' column")
@@ -153,9 +154,9 @@ def plot_time_series(data, start_date, end_date, census_block, feature_filters=N
     # Ensure the date column is in datetime format
     data['date_'] = pd.to_datetime(data['date_'])
 
-    # Filter data based on the census block if provided
-    if census_block:
-        data = data[data['Census track'] == census_block]
+    # Filter data based on the census blocks if provided
+    if census_blocks:
+        data = data[data['Census track'].isin(census_blocks)]
 
     # Filter data based on the provided date range
     if start_date and end_date:
@@ -170,6 +171,7 @@ def plot_time_series(data, start_date, end_date, census_block, feature_filters=N
     # Convert to dictionary with date as key and count as value
     json_serializable_data = {date.strftime('%Y-%m-%d'): count for date, count in resampled_data.items()}
     return json_serializable_data
+
 
     # # Creating the figure
     # fig, ax = plt.subplots(figsize=(10, 6))
@@ -188,8 +190,7 @@ def plot_time_series(data, start_date, end_date, census_block, feature_filters=N
 # fig = plot_time_series(data, '2023-01-01', '2023-12-31', feature_filters, bbox, interval='M')
 # fig.show()
 
-
-def plot_demographic_analysis(data, demographic_feature, census_block, analysis_type='count', feature_filters=None, start_date=None, end_date=None, bbox=None):
+def plot_demographic_analysis(data, demographic_feature, census_blocks=None, analysis_type='count', feature_filters=None, start_date=None, end_date=None, bbox=None):
     """
     Create a plot for demographic analysis of shootings based on a specified demographic feature, with time and location filters.
 
@@ -203,7 +204,7 @@ def plot_demographic_analysis(data, demographic_feature, census_block, analysis_
     bbox (tuple, optional): A tuple of (min_x, min_y, max_x, max_y) representing the bounding box for filtering by geographical coordinates.
 
     Returns:
-    matplotlib.figure.Figure: The figure object containing the demographic analysis plot.
+    dict: A dictionary with demographic feature values as keys and counts (or other analysis results) as values.
     """
     # Set default values for feature_filters if None
     if feature_filters is None:
@@ -225,9 +226,9 @@ def plot_demographic_analysis(data, demographic_feature, census_block, analysis_
         data = data[(data['point_x'] >= min_x) & (data['point_x'] <= max_x) &
                     (data['point_y'] >= min_y) & (data['point_y'] <= max_y)]
         
-    # Filter data based on the census block if provided
-    if census_block:
-        data = data[data['Census track'] == census_block]
+    # Filter data based on the census blocks if provided
+    if census_blocks:
+        data = data[data['Census track'].isin(census_blocks)]
 
     # Perform the analysis
     if analysis_type == 'count':

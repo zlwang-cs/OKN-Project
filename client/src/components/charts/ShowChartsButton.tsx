@@ -9,7 +9,7 @@ import type {
 } from "../../data/types";
 
 type ShowChartsButtonProps = {
-  censusBlock: number | undefined;
+  censusBlock: number[] | undefined;
 };
 
 const ShowChartsButton = ({ censusBlock }: ShowChartsButtonProps) => {
@@ -20,7 +20,6 @@ const ShowChartsButton = ({ censusBlock }: ShowChartsButtonProps) => {
   >([]);
 
   useEffect(() => {
-    console.log("censusBlock: ", censusBlock);
     fetchData();
   }, [censusBlock]);
 
@@ -48,7 +47,7 @@ const ShowChartsButton = ({ censusBlock }: ShowChartsButtonProps) => {
         body: JSON.stringify({
           start_date: "2023-01-01",
           end_date: "2023-12-31",
-          census_block: censusBlock,
+          census_block: JSON.stringify(censusBlock),
         }),
       });
       const data: LineChartRawDataObject = await response.json();
@@ -70,7 +69,7 @@ const ShowChartsButton = ({ censusBlock }: ShowChartsButtonProps) => {
             demographic_feature: "sex",
             start_date: "2023-01-01",
             end_date: "2023-12-31",
-            census_block: censusBlock,
+            census_block: JSON.stringify(censusBlock),
           }),
         },
       );
@@ -95,17 +94,15 @@ const ShowChartsButton = ({ censusBlock }: ShowChartsButtonProps) => {
       >
         Show Charts
       </button> */}
-        <div className="w-full flex flex-row items-center justify-center">
-          {
-            lineChartData.length === 0 && demographicChartData.length === 0 && (
-              <div className="text-lg text-gray-500 mt-4">
-                No data available for this census block.
-              </div>
-            )
-          }
-          <OknLineChart data={lineChartData} />
-          <OknDemographicChart data={demographicChartData} />
-        </div>
+      <div className="w-full flex flex-row items-center justify-center">
+        {lineChartData.length === 0 && demographicChartData.length === 0 && (
+          <div className="text-lg text-gray-500 mt-4">
+            No data available for this census block.
+          </div>
+        )}
+        <OknLineChart data={lineChartData} />
+        <OknDemographicChart data={demographicChartData} />
+      </div>
     </div>
   );
 };
