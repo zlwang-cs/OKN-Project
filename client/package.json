@@ -16,6 +16,8 @@
     "@astrojs/react": "^3.1.0",
     "@astrojs/tailwind": "^5.1.0",
     "@fontsource/roboto": "^5.0.12",
+    "@nanostores/persistent": "^0.10.1",
+    "@nanostores/react": "^0.7.2",
     "@turf/turf": "^6.5.0",
     "@types/geojson": "^7946.0.14",
     "@types/react": "^18.2.74",
@@ -24,6 +26,7 @@
     "leaflet": "^1.9.4",
     "leaflet-pip": "^1.1.0",
     "leaflet.heat": "^0.2.0",
+    "nanostores": "^0.10.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-leaflet": "^4.2.1",
@@ -32,7 +35,7 @@
     "typescript": "^5.4.3"
   },
   "devDependencies": {
-    "@types/leaflet": "^1.9.8",
+    "@types/leaflet": "^1.9.12",
     "@typescript-eslint/parser": "^7.3.1",
     "eslint": "^8.57.0",
     "eslint-plugin-astro": "^0.32.0",

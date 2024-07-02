@@ -1,109 +1,132 @@
-import { useState, useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import * as L from "leaflet";
 import * as turf from "@turf/turf";
 import "leaflet.heat";
 import "leaflet/dist/leaflet.css";
+import { useStore } from '@nanostores/react';
+import { selectedCensusBlocks } from '../stores/censusStore';
 import heatmapPoints from "../data/heatmap_points.json";
-import censusTrackAreas from "../data/census_track.json"
+import censusTrackAreas from "../data/census_track.json";
 import type { CensusTrackAreas } from "../../types/turf";
 import ShowChartsButton from "./charts/ShowChartsButton";
 
-// Leaflet website for API documentation: https://leafletjs.com/examples/quick-start/
 const Map = (): JSX.Element => {
-  const [points, setPoints] = useState<number[][]>();
-  const [censusBlock, setCensusBlock] = useState<number>();
+  const censusBlocks = useStore(selectedCensusBlocks);
+  const mapRef = useRef<any>(null);
+  const censusTrackMapRef = useRef<any>({});
 
   useEffect(() => {
-    // draw map
-    const map = L.map("map").setView(
-      [39.99269824882205, -75.15686301406642],
-      12,
-    );
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    }).addTo(map);
+    if (!mapRef.current) {
+      const map = L.map("map").setView([39.99269824882205, -75.15686301406642], 12);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      }).addTo(map);
+      mapRef.current = map;
 
-    // plot points on heatmap
-    const points = heatmapPoints
-      ? heatmapPoints.map((p) => {
-          return [p[0], p[1]];
-        })
-      : [];
-    L.heatLayer(points).addTo(map);
+      const points = heatmapPoints ? heatmapPoints.map((p) => [p[0], p[1]]) : [];
+      L.heatLayer(points).addTo(map);
 
-    // plot areas of census track
-    const censusTrackAreasTyped: CensusTrackAreas = censusTrackAreas;
-    let census_track_map: any = {};
-    Object.keys(censusTrackAreas).forEach((key) => {
-      const points = censusTrackAreasTyped[key]; // Access the value associated with the current key
-      const polygon = L.polygon(points);
-      census_track_map[key] = polygon;
-      polygon
-        .setStyle({
-          color: "blue", // New stroke color
-          fillColor: "white",
-          fillOpacity: 0.3, // New fill opacity
-          dashArray: "3", // New dash style
-          weight: 0.7, // Stroke width
-        })
-        .addTo(map);
-    });
-
-    // popup
-    let popUp = L.popup().setLatLng().setContent("I am a standalone popup.");
-    map.on("click", function (e: any) {
-      // if point is not in any census track, set censusBlock to undefined and return
-      let isInsideAny = false;
-      Object.keys(census_track_map).forEach((key) => {
-        const turf_polygon = turf.polygon([censusTrackAreasTyped[key]]);
-        const point = turf.point([e.latlng.lat, e.latlng.lng]);
-        const isInside = turf.booleanPointInPolygon(point, turf_polygon);
-
-        if (isInside) {
-          census_track_map[key]
-            .setStyle({
-              color: "blue", // New stroke color
-              fillColor: "blue",
-              fillOpacity: 0.8, // New fill opacity
-              weight: 0.7, // Stroke width
-            })
-            .addTo(map);
-          popUp
-            .setLatLng(e.latlng)
-            .setContent(
-              "You clicked the map at " + e.latlng.toString() + " in " + key,
-            )
-            .openOn(map);
-          
-          // set state
-          isInsideAny = true;
-          setPoints([e.latlng.lat, e.latlng.lng]);
-          setCensusBlock(parseInt(key));
-        } else {
-          census_track_map[key].setStyle({
-            color: "blue", // New stroke color
+      const censusTrackAreasTyped: CensusTrackAreas = censusTrackAreas;
+      Object.keys(censusTrackAreas).forEach((key) => {
+        const points = censusTrackAreasTyped[key];
+        const polygon = L.polygon(points);
+        censusTrackMapRef.current[key] = polygon;
+        polygon
+          .setStyle({
+            color: "blue",
             fillColor: "white",
-            fillOpacity: 0.3, // New fill opacity
-            dashArray: "3", // New dash style
-            weight: 0.7, // Stroke width
-          });
-        }
+            fillOpacity: 0.3,
+            dashArray: "3",
+            weight: 0.7,
+          })
+          .addTo(map);
       });
 
-      // if point is not in any census track, set censusBlock to undefined and return
-      if (!isInsideAny) {
-        setCensusBlock(undefined);
+      const popUp = L.popup().setLatLng().setContent("I am a standalone popup.");
+      map.on("click", (e: any) => {
+        let isInsideAny = false;
+        const currentCensusBlocks = selectedCensusBlocks.get();
+
+        Object.keys(censusTrackMapRef.current).forEach((key) => {
+          const turfPolygon = turf.polygon([censusTrackAreasTyped[key]]);
+          const point = turf.point([e.latlng.lat, e.latlng.lng]);
+          const isInside = turf.booleanPointInPolygon(point, turfPolygon);
+
+          if (isInside) {
+            censusTrackMapRef.current[key]
+              .setStyle({
+                color: "blue",
+                fillColor: "blue",
+                fillOpacity: 0.8,
+                weight: 0.7,
+              })
+              .addTo(map);
+
+            isInsideAny = true;
+            if (!currentCensusBlocks.includes(parseInt(key))) {
+              popUp
+              .setLatLng(e.latlng)
+              .setContent("You clicked the map at " + e.latlng.toString() + " in " + key)
+              .openOn(map);
+
+              // add the block to the selected blocks
+              selectedCensusBlocks.set([...currentCensusBlocks, parseInt(key)]);
+            } else {
+              // remove the block from the selected blocks
+              selectedCensusBlocks.set(currentCensusBlocks.filter((b) => b !== parseInt(key)));
+            }
+          } else {
+            censusTrackMapRef.current[key].setStyle({
+              color: "blue",
+              fillColor: "white",
+              fillOpacity: 0.3,
+              dashArray: "3",
+              weight: 0.7,
+            });
+          }
+        });
+
+        if (!isInsideAny) {
+          selectedCensusBlocks.set([]);
+        }
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    // Update styles for selected blocks without reinitializing the map
+    Object.keys(censusTrackMapRef.current).forEach((key) => {
+      if (censusBlocks.includes(parseInt(key))) {
+        censusTrackMapRef.current[key].setStyle({
+          color: "blue",
+          fillColor: "blue",
+          fillOpacity: 0.8,
+          weight: 0.7,
+        });
+      } else {
+        censusTrackMapRef.current[key].setStyle({
+          color: "blue",
+          fillColor: "white",
+          fillOpacity: 0.3,
+          dashArray: "3",
+          weight: 0.7,
+        });
       }
     });
-  }, []);
+  }, [censusBlocks]);
 
   return (
     <>
+      <button 
+        className="bg-blue-500 hover:bg-blue-700 text-white text-sm py-1 px-2 rounded mb-2"
+        onClick={() => selectedCensusBlocks.set([])}
+      >
+        Clear Selection
+      </button>
       <div className="w-[60vw] bg-gray-50">
         <div id="map" style={{ height: "60vh" }}></div>
       </div>
-      <ShowChartsButton censusBlock={censusBlock} />
+      <ShowChartsButton censusBlock={censusBlocks} />
     </>
   );
 };
