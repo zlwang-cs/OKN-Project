@@ -7,13 +7,36 @@ import type {
   DemographicChartDataType,
   DemographicChartRawDataObject,
 } from "../../data/types";
+import { useStore } from "@nanostores/react";
+import { filtersStore, dateRangeStore } from "../../stores/filterStore";
+import { filterList } from "../../../types/filters";
 
-type ShowChartsButtonProps = {
+type ChartsProp = {
   censusBlock: number[] | undefined;
+  trigger: boolean;
 };
 
-const ShowChartsButton = ({ censusBlock }: ShowChartsButtonProps) => {
-  // const [showCharts, setShowCharts] = useState(false);
+type SelectedFiltersType = {
+  [key: string]: any;
+};
+
+const convertYesNoToNumber = (filters: SelectedFiltersType) => {
+  const updatedFilters = { ...filters };
+  Object.keys(updatedFilters).forEach((key) => {
+    const filter = filterList.find((f) => f.key === key);
+    if (filter && filter.options && filter.options.includes("Yes")) {
+      updatedFilters[key] = updatedFilters[key].map((value: string) =>
+        value === "Yes" ? 1.0 : value === "No" ? 0.0 : value
+      );
+    }
+  });
+  return updatedFilters;
+};
+
+const Charts = ({ censusBlock, trigger }: ChartsProp) => {
+  const filters = useStore(filtersStore);
+  const dateRange = useStore(dateRangeStore);
+
   const [lineChartData, setLineChartData] = useState<LineChartDataType[]>([]);
   const [demographicChartData, setDemographicChartData] = useState<
     DemographicChartDataType[]
@@ -21,22 +44,22 @@ const ShowChartsButton = ({ censusBlock }: ShowChartsButtonProps) => {
 
   useEffect(() => {
     fetchData();
-  }, [censusBlock]);
-
-  // const submitShowCharts = () => {
-  //   // if the charts are not shown, fetch the data and set showCharts to true
-  //   if (!showCharts) {
-  //     setShowCharts(true);
-  //     fetchData();
-  //     return;
-  //   }
-
-  //   // if the charts are shown, set showCharts to false
-  //   setShowCharts(false);
-  // };
+  }, [censusBlock, trigger]);
 
   const fetchData = async () => {
-    // try to fetch data
+    const selectedFilters: SelectedFiltersType = filters.selectedKeys.reduce(
+      (acc: SelectedFiltersType, key: string) => {
+        if (filters[key]) {
+          acc[key] = filters[key];
+        }
+        return acc;
+      },
+      {}
+    );
+
+    const convertedFilters = convertYesNoToNumber(selectedFilters);
+
+    // try to fetch data from the server
     try {
       // Fetch line chart data
       const response = await fetch("http://127.0.0.1:12345/line-chart-data", {
@@ -45,9 +68,10 @@ const ShowChartsButton = ({ censusBlock }: ShowChartsButtonProps) => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          start_date: "2023-01-01",
-          end_date: "2023-12-31",
-          census_block: JSON.stringify(censusBlock),
+          start_date: dateRange?.start.toString() ?? "2023-01-01",
+          end_date: dateRange?.end.toString() ?? "2023-12-31",
+          census_block: censusBlock,
+          filters: convertedFilters,
         }),
       });
       const data: LineChartRawDataObject = await response.json();
@@ -66,12 +90,13 @@ const ShowChartsButton = ({ censusBlock }: ShowChartsButtonProps) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            demographic_feature: "sex",
-            start_date: "2023-01-01",
-            end_date: "2023-12-31",
-            census_block: JSON.stringify(censusBlock),
+            start_date: dateRange?.start.toString() ?? "2023-01-01",
+            end_date: dateRange?.end.toString() ?? "2023-12-31",
+            census_block: censusBlock,
+            filters: convertedFilters,
+            demographic_features: "sex",
           }),
-        },
+        }
       );
       const demographicData: DemographicChartRawDataObject =
         await demographicResponse.json();
@@ -88,12 +113,6 @@ const ShowChartsButton = ({ censusBlock }: ShowChartsButtonProps) => {
 
   return (
     <div className="w-screen flex flex-col items-center justify-center mt-4">
-      {/* <button
-        className="p-2 rounded-xl bg-blue-500 text-sm transition ease-in-out duration-100 delay-75 hover:scale-105 active:scale-95 hover:shadow-lg hover:shadow-gray-600/50"
-        onClick={submitShowCharts}
-      >
-        Show Charts
-      </button> */}
       <div className="w-full flex flex-row items-center justify-center">
         {lineChartData.length === 0 && demographicChartData.length === 0 && (
           <div className="text-lg text-gray-500 mt-4">
@@ -107,4 +126,4 @@ const ShowChartsButton = ({ censusBlock }: ShowChartsButtonProps) => {
   );
 };
 
-export default ShowChartsButton;
+export default Charts;
