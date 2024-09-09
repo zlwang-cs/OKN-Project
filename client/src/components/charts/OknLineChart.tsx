@@ -32,7 +32,6 @@ const OknLineChart = ({ data }: OknLineChartProps) => {
           <Line type="monotone" dataKey="counts" stroke="#3b82f6" />
           <Tooltip />
           <Legend />
-          <CartesianGrid stroke="#e0dfdf" strokeDasharray="5 5" />
         </LineChart>
       </ResponsiveContainer>
     </div>

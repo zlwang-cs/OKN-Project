@@ -7,6 +7,8 @@ from models.model import DataModel
 from controllers.line import *
 from controllers.demographic import *
 from flask_cors import CORS, cross_origin
+import os
+import json
 
 app = Flask(__name__)
 # Configure CORS similarly to your Go application
@@ -17,6 +19,11 @@ data_model = DataModel('alignment_shooting.csv')
 data = data_model.data
 
 feature_list = open('feature_list.txt', 'r').read().split('\n')
+
+# heatmap data
+heatmap_data_path = os.path.join(os.path.dirname(__file__),'data', 'full_heatmap_geopoints.json')
+with open(heatmap_data_path, 'r') as file:
+    heatmap_data = json.load(file)
 
 size_k = 150
 
@@ -230,6 +237,13 @@ def line_chart_data():
 @cross_origin()
 def demographic_chart_data():
     return demographic_chart(data_model)
+
+# heatmap data endpoint
+@app.route('/heatmap-geopoints', methods=["GET", "OPTIONS"])
+@cross_origin(origin="http://localhost:4321", headers=['Content-Type', 'Authorization'])
+def heatmap_geopoints():
+    response_data = jsonify(heatmap_data)
+    return response_data
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=12345, debug=True)
