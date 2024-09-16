@@ -4,6 +4,7 @@ import seaborn as sns
 import pandas as pd
 import geopandas as gpd
 from shapely.geometry import Point
+import os
 
 import folium
 from folium.plugins import HeatMap
@@ -105,6 +106,8 @@ def plot_shooting_heatmap(data, start_date, end_date, feature_filters=None):
 # fig.show()
 
 
+import pandas as pd
+
 def plot_time_series(data, start_date, end_date, census_blocks=None, feature_filters=None, bbox=None, interval='M'):
     """
     Create a time series plot of the number of shootings based on specified feature filters, 
@@ -143,7 +146,11 @@ def plot_time_series(data, start_date, end_date, census_blocks=None, feature_fil
 
     # Filter data based on the feature filters
     for feature, values in feature_filters.items():
-        data = data[data[feature].isin(values)]
+        if feature == 'age' and isinstance(values, list) and len(values) == 2:
+            min_age, max_age = values
+            data = data[(data[feature] >= min_age) & (data[feature] <= max_age)]
+        else:
+            data = data[data[feature].isin(values)]
 
     # Filter data based on the bounding box if provided
     if bbox:
@@ -171,7 +178,6 @@ def plot_time_series(data, start_date, end_date, census_blocks=None, feature_fil
     # Convert to dictionary with date as key and count as value
     json_serializable_data = {date.strftime('%Y-%m-%d'): count for date, count in resampled_data.items()}
     return json_serializable_data
-
 
     # # Creating the figure
     # fig, ax = plt.subplots(figsize=(10, 6))
@@ -206,13 +212,17 @@ def plot_demographic_analysis(data, demographic_feature, census_blocks=None, ana
     Returns:
     dict: A dictionary with demographic feature values as keys and counts (or other analysis results) as values.
     """
-    # Set default values for feature_filters if None
+    # Set default value for feature_filters if None
     if feature_filters is None:
         feature_filters = {}
 
     # Filter data based on the feature filters
     for feature, values in feature_filters.items():
-        data = data[data[feature].isin(values)]
+        if feature == 'age' and isinstance(values, list) and len(values) == 2:
+            min_age, max_age = values
+            data = data[(data[feature] >= min_age) & (data[feature] <= max_age)]
+        else:
+            data = data[data[feature].isin(values)]
 
     # Filter data based on the date range if provided
     if start_date and end_date:
@@ -237,7 +247,9 @@ def plot_demographic_analysis(data, demographic_feature, census_blocks=None, ana
         # Extend this part for other types of analyses like mean, etc.
         analysis_result = data[demographic_feature].value_counts()  # Placeholder
 
-    return analysis_result.to_dict()
+    # Convert the keys of the analysis_result to strings
+    result_dict = {str(key): value for key, value in analysis_result.items()}
+    return result_dict
 
     # # Creating the figure
     # fig, ax = plt.subplots(figsize=(10, 6))
@@ -259,13 +271,21 @@ def plot_demographic_analysis(data, demographic_feature, census_blocks=None, ana
 
 
 if __name__ == '__main__':
-    data = pd.read_csv('alignment_shooting.csv')
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    csv_path = os.path.join(script_dir, '..', 'alignment_shooting.csv')
+    data = pd.read_csv(csv_path)
+
     # drop the rows with missing or NaN values34
     data.dropna(inplace=True)
     # feature_filters = {'race': ['B', 'W']} # Optional
     heatmap_map = create_shooting_heatmap_on_map(data, '2023-01-01', '2023-12-31', feature_filters=None)
     heatmap_map.save('heatmap.html')  # Save to an HTML file
 
+    # Get the unique values from the 'race' column
+    unique_races = data['race'].unique()
+
+    print(unique_races)
+
     # save line chart fig
-    fig = plot_time_series(data, '2023-01-01', '2023-12-31', feature_filters=None, bbox=None, interval='M')
-    fig.savefig('static/images/line.png')
+    # fig = plot_time_series(data, '2023-01-01', '2023-12-31', feature_filters=None, bbox=None, interval='M')
+    # fig.savefig('static/images/line.png')
